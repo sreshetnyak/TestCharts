@@ -22,6 +22,18 @@ struct HomeView: View {
             switch state.case {
             case .detail(let store):
                 DetailView(store: store)
+            default:
+                EmptyView()
+            }
+        }
+        .sheet(
+            item: $store.scope(state: \.sheet, action: \.sheet)
+        ) { sheetStore in
+            switch sheetStore.case {
+            case .transactionsSheet(let transactionsStore):
+                TransactionsSheetView(store: transactionsStore)
+            default:
+                EmptyView()
             }
         }
         .task {
@@ -56,7 +68,6 @@ struct HomeView: View {
                 }
                 .redacted(reason: store.isLoading ? .placeholder : .invalidated)
             }
-
         }
         .padding(.horizontal)
     }

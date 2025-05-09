@@ -16,6 +16,7 @@ struct HomeReducer {
         var transactions: [Transaction] = []
         var isLoading = false
         var path = StackState<Destination.State>()
+        @Presents var sheet: Destination.State?
     }
     
     enum Action {
@@ -23,6 +24,8 @@ struct HomeReducer {
         case fetchdData
         case processResponse([Transaction])
         case path(StackAction<Destination.State, Destination.Action>)
+        case sheet(PresentationAction<Destination.Action>)
+        case showTransactionsSheet
     }
     
     @Dependency(\.continuousClock) var clock
@@ -41,26 +44,35 @@ struct HomeReducer {
             case let .processResponse(transactions):
                 state.transactions = transactions
                 state.isLoading = false
+                return .run { send in
+                    await send(.showTransactionsSheet)
+                }
+            case .showTransactionsSheet:
+                state.sheet = .transactionsSheet(TransactionsSheetReducer.State(transactions: state.transactions))
                 return .none
             case .path(.element(id: _, action: let action)):
                 switch action {
                 case .detail(.back):
                     state.path.removeLast()
                     return .none
+                default:
+                    return .none
                 }
             case .path(.popFrom):
                 state.path.removeAll()
                 return .none
-            case .path:
+            case .path, .sheet:
                 return .none
             }
         }
         .forEach(\.path, action: \.path)
+        .ifLet(\.$sheet, action: \.sheet)
     }
     
     @Reducer(state: .equatable)
     enum Destination {
         case detail(DetailReducer)
+        case transactionsSheet(TransactionsSheetReducer)
     }
     
     func loadTransactions(from fileName: String) -> Effect<Action> {
