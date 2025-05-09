@@ -26,6 +26,7 @@ struct HomeReducer {
     }
     
     @Dependency(\.continuousClock) var clock
+    @Dependency(\.csvClient) var csvClient
     
     var body: some ReducerOf<Self> {
         Reduce { state, action in
@@ -36,10 +37,7 @@ struct HomeReducer {
             case .fetchdData:
                 state.isLoading = true
                 state.transactions = Transaction.mocks
-                return .run { send in
-                    try await clock.sleep(for: .seconds(2))
-                    await send(.processResponse(Transaction.mocks))
-                }
+                return loadTransactions(from: "data")
             case let .processResponse(transactions):
                 state.transactions = transactions
                 state.isLoading = false
@@ -63,5 +61,16 @@ struct HomeReducer {
     @Reducer(state: .equatable)
     enum Destination {
         case detail(DetailReducer)
+    }
+    
+    func loadTransactions(from fileName: String) -> Effect<Action> {
+        .run { send in
+            do {
+                let models = try await csvClient.loadTransactions(fileName)
+                await send(.processResponse(models))
+            } catch {
+                await send(.processResponse(Transaction.mocks))
+            }
+        }
     }
 }
