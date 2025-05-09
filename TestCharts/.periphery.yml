@@ -1,0 +1,12 @@
+project: TestCharts.xcodeproj
+retain_objc_accessible: false
+retain_public: true
+retain_codable_properties: false
+exclude_tests: true
+report_exclude:
+
+exclude_targets:
+- TestChartsUITests
+- TestChartsTests
+schemes:
+- TestCharts
