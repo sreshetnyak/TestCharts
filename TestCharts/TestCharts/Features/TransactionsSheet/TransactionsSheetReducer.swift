@@ -14,14 +14,17 @@ struct TransactionsSheetReducer {
     struct State: Equatable {
         var transactions: [Transaction]
     }
-
+    
     enum Action {
+        case transactionTapped(Transaction)
         case dismiss
     }
-
+    
     var body: some ReducerOf<Self> {
         Reduce { _, action in
             switch action {
+            case .transactionTapped:
+                return .none
             case .dismiss:
                 return .none
             }

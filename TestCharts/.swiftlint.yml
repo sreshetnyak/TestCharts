@@ -10,6 +10,7 @@ disabled_rules:
 - force_try
 - attributes
 - cyclomatic_complexity
+- large_tuple
 
 opt_in_rules:
   - array_init
